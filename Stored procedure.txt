@@ -1,0 +1,50 @@
+DROP TABLE TABLE_B;
+DROP TABLE TABLE_A;
+DROP PROCEDURE deduct;
+
+CREATE TABLE `TABLE_A` (
+  `ID` INT PRIMARY KEY,
+  `QTY`INT
+);
+
+CREATE TABLE `TABLE_B` (
+  `ID` INT,
+  `QTY`INT,
+  CONSTRAINT `fk_ID` FOREIGN KEY (`ID`) REFERENCES `TABLE_A` (`ID`)
+);
+
+INSERT INTO `fehb`.`table_a` (`ID`,`QTY`) VALUES (1, 10);
+INSERT INTO `fehb`.`table_a` (`ID`,`QTY`) VALUES (2, 20);
+INSERT INTO `fehb`.`table_a` (`ID`,`QTY`) VALUES (3, 25);
+
+
+DELIMITER //
+ 
+CREATE PROCEDURE deduct(
+	IN Q int
+)
+BEGIN
+    DECLARE X, Y INT DEFAULT 0;
+    SET max_sp_recursion_depth=255;
+    
+    select ID,QTY INTO X,Y from table_a where qty<>0 limit 1;
+    
+    IF Q < Y THEN
+		SET Y = Y - Q;
+        UPDATE TABLE_A SET QTY=Y WHERE ID=X;
+        INSERT INTO TABLE_B VALUES (X,Q);
+	ELSE
+		UPDATE TABLE_A SET QTY=0 WHERE ID=X;
+        INSERT INTO TABLE_B VALUES (X,Y);
+        SET Y = Q - Y;
+        IF Y > 0 THEN
+			CALL deduct(Y);
+		END IF;
+	END IF;
+END //
+ 
+DELIMITER ;
+
+call deduct(55);
+select * from table_a;
+select * from table_b;
