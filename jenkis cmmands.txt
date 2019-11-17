@@ -1,0 +1,62 @@
+curl http://localhost:8080/jnlpJars/jenkins-cli.jar --output jenkins-cli.jar
+java -jar jenkins-cli.jar -s http://localhost:8080/ list-plugins —username SumanReddy —password SumanReddy
+jenkins > manage jenkins > configure global security > Enable security > authorization > role based access ---> provies Manage and Assign Roles
+jenkins > manage jenkins > Manage and Assign Roles > assign roles > global roles > check the An0nymous option
+http://localhost:8080/pluginManager/api/xml?depth=1
+
+http://localhost:8080/script
+Jenkins.instance.pluginManager.plugins.each{
+  plugin -> 
+    println ("${plugin.getDisplayName()} (${plugin.getShortName()}): ${plugin.getVersion()}")
+}
+
+Jenkins.instance.pluginManager.plugins.sort { it.getDisplayName() }.each{
+  plugin -> 
+    println ("${plugin.getDisplayName()} (${plugin.getShortName()}): ${plugin.getVersion()}")
+}
+
+
+
+1. Get the Jenkins CLI
+The Jenkins CLI will allow us to interact with our Jenkins server from the command line. We can get it with a simple curl call.
+
+curl 'localhost:8080/jnlpJars/jenkins-cli.jar' > jenkins-cli.jar
+
+2. Create a Groovy script for parsing (thanks to malenkiy_scot)
+Save the following as plugins.groovy.
+
+def plugins = jenkins.model.Jenkins.instance.getPluginManager().getPlugins()
+plugins.each {println "${it.getShortName()}: ${it.getVersion()}"}
+
+3. Call the Jenkins API for plugin results
+Call the Jenkins server (localhost:8080 here) with your login username and password while referencing the Groovy script:
+
+java -jar jenkins-cli.jar -s http://localhost:8080 groovy --username "admin" --password "admin" = < plugins.groovy > plugins.txt
+
+
+
+sh install_jenkins_plugins.sh localhost:8080 SumanReddy SumanReddy
+
+http://localhost:8080/exit
+http://localhost:8080/restart
+http://localhost:8080/reload
+
+
+Open Console/Command line --> Go to your Jenkins installation directory. Execute the following commands respectively:
+
+to stop:
+jenkins.exe stop
+
+to start:
+jenkins.exe start
+
+to restart:
+jenkins.exe restart
+
+
+Jenkins refuses to restart
+
+(jenkins_url)/safeRestart
+and
+(jenkins_url)/restart
+Go to Manage Jenkins links. Find the option "Install as Windows service". Click on install. Now (jenkins_url)/restart option will work. I faced this same issue now
